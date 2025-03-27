@@ -13,12 +13,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  UserController controller = Get.put(UserController());
-  GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  TextEditingController idController = TextEditingController();
-  TextEditingController nameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  final UserController controller = Get.put(UserController());
+
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +36,7 @@ class _HomePageState extends State<HomePage> {
               Get.offNamed(AppRoutes.login);
             },
             icon: const Icon(
-              Icons.login,
+              Icons.logout,
               size: 30,
             ),
           ),

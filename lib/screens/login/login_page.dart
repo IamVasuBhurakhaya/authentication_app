@@ -62,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(
                   height: 20,
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 const Text(
@@ -124,13 +124,13 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 50,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       "Don't have an account ? ",
                       style: TextStyle(
                         fontSize: 16,
@@ -140,7 +140,7 @@ class _LoginPageState extends State<LoginPage> {
                       onTap: () {
                         Get.toNamed(AppRoutes.signUp);
                       },
-                      child: Text(
+                      child: const Text(
                         "Sign Up ",
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
