@@ -1,83 +1,101 @@
-import 'package:authentication_app/modal/modal.dart';
 import 'package:sqflite/sqflite.dart';
+import '../modal/modal.dart';
 
 class DBHelper {
   DBHelper._();
-  static DBHelper dbHelper = DBHelper._();
+  static final DBHelper dbHelper = DBHelper._();
+  Database? db;
 
-  Database? database;
+  final String tUser = 'user';
+  final String id = 'id';
+  final String name = 'name';
+  final String email = 'email';
+  final String password = 'password';
 
-  String tUser = 'user';
-  String name = 'name';
-  String email = 'email';
-  String password = 'password';
+  Future<Database> get database async {
+    if (db != null) return db!;
+    db = await initDB();
+    return db!;
+  }
 
-  Future<void> initDB() async {
+  Future<Database> initDB() async {
     String dbPath = await getDatabasesPath();
     String path = '$dbPath/user.db';
 
-    database = await openDatabase(
+    return await openDatabase(
       path,
       version: 1,
       onCreate: (db, _) {
-        String query = ''' CREATE TABLE $tUser(
-          user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-          $name TEXT NOT NULL,
-          $email TEXT NOT NULL,
-          $password TEXT NOT NULL
-        );''';
-
-        db
-            .execute(query)
-            .then(
-              (value) => print("1 Table Create"),
-            )
-            .onError((error, _) => print(error.toString()));
+        db.execute('''
+          CREATE TABLE $tUser(
+            $id INTEGER PRIMARY KEY AUTOINCREMENT,
+            $name TEXT NOT NULL,
+            $email TEXT UNIQUE NOT NULL,
+            $password TEXT NOT NULL
+          );
+        ''');
       },
     );
   }
 
-  Future<int?> insertUser({
+  Future<int> insertUser({
     required String name,
     required String email,
     required String password,
   }) async {
-    if (database == null) await initDB();
-    String query =
-        "INSERT INTO $tUser($name, $email, ${this.password}) VALUES(?, ? , ?);";
-    List values = [name, email, password];
-    try {
-      int? result = await database?.rawInsert(query, values);
-      print("Insert Success: ID $result");
-      return result;
-    } catch (e) {
-      print("Insert failed: $e");
-      return null;
-    }
+    final db = await database;
+    return await db.insert(
+      tUser,
+      {
+        'name': name,
+        'email': email,
+        'password': password,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
-  Future<List<UserModal>> getUser() async {
-    await initDB();
-    String query = "SELECT * FROM $tUser";
-    List<Map<String, dynamic>> result = await database?.rawQuery(query) ?? [];
-    return result
-        .map((Map<String, dynamic> e) => UserModal.fromMap(map: e))
-        .toList();
+  Future<List<UserModal>> getUsersByEmail(String userEmail) async {
+    final db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      tUser,
+      where: '$email = ?',
+      whereArgs: [userEmail],
+    );
+    return result.map((e) => UserModal.fromMap(e)).toList();
   }
 
-  Future<int?> deleteUser({required int id}) async {
-    if (database == null) await initDB();
-    String query = "DELETE FROM $tUser WHERE user_id = $id";
-    return await database?.rawDelete(query);
+  Future<List<UserModal>> getUsers() async {
+    final db = await database;
+    List<Map<String, dynamic>> result = await db.query(tUser);
+    return result.map((e) => UserModal.fromMap(e)).toList();
   }
 
-  Future<int?> updateUser({
-    required UserModal model,
+  Future<int> deleteUser(int userId) async {
+    final db = await database;
+    return await db.delete(
+      tUser,
+      where: '$id = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  Future<int> updateUser({
+    required int id,
+    required String name,
+    required String email,
+    required String password,
   }) async {
-    if (database == null) await initDB();
-    String query =
-        "UPDATE $tUser SET $name = ?, $email = ?, $password = ? WHERE user_id = ${model.id}";
-    List values = [model.name, model.email, model.password];
-    return await database?.rawUpdate(query, values);
+    final db = await database;
+    return await db.update(
+      tUser,
+      {
+        'name': name,
+        'email': email,
+        'password': password,
+      },
+      where: '$id = ?',
+      whereArgs: [id],
+    );
   }
 }

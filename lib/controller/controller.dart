@@ -1,85 +1,97 @@
-import 'package:authentication_app/modal/modal.dart';
-import 'package:flutter/material.dart';
+import 'dart:ui';
+import 'package:authentication_app/helper/helper.dart';
 import 'package:get/get.dart';
-
-import '../helper/helper.dart';
+import '../modal/modal.dart';
 
 class UserController extends GetxController {
-  Future<List<UserModal>>? userList;
+  var users = <UserModal>[].obs;
+  var isLoggedIn = false.obs;
 
-  int? userIndex;
-
-  UserController() {
-    getUser();
+  @override
+  void onInit() {
+    super.onInit();
+    fetchUsers();
   }
 
-  void updateUserIndex({required int index}) {
-    userIndex = index;
-    update();
+  Future<void> fetchUsers() async {
+    final List<UserModal> userList = await DBHelper.dbHelper.getUsers();
+    users.assignAll(userList);
   }
 
-  void resetUserIndex() {
-    userIndex = null;
-    update();
-  }
-
-  Future<void> addUser({
+  Future<void> registerUser({
     required String name,
     required String email,
     required String password,
   }) async {
-    int? res = await DBHelper.dbHelper
+    List<UserModal> existingUsers =
+        await DBHelper.dbHelper.getUsersByEmail(email);
+    if (existingUsers.isNotEmpty) {
+      Get.snackbar("Error", "Email already registered",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xffFF0000));
+      return;
+    }
+
+    int newId = users.isEmpty ? 1 : (users.last.id + 1);
+
+    await addUser(id: newId, name: name, email: email, password: password);
+
+    Get.snackbar("Success", "Account created successfully!",
+        snackPosition: SnackPosition.BOTTOM);
+    Get.offNamed('/login');
+  }
+
+  Future<void> addUser({
+    required int id,
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    await DBHelper.dbHelper
         .insertUser(name: name, email: email, password: password);
-    if (res != null) {
-      Get.snackbar('User Added', ' $name added successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          colorText: Colors.white,
-          backgroundColor: Colors.green);
-    } else {
-      Get.snackbar('Error', 'Insertion failed',
-          snackPosition: SnackPosition.BOTTOM,
-          colorText: Colors.white,
-          backgroundColor: Colors.red);
-    }
-    update();
-  }
-
-  void getUser() async {
-    userList = DBHelper.dbHelper.getUser();
-    update();
-  }
-
-  Future<void> updateUser({required UserModal model}) async {
-    int? res = await DBHelper.dbHelper.updateUser(model: model);
-    if (res != null) {
-      getUser();
-      Get.snackbar('User Updated', 'User updated successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          colorText: Colors.white,
-          backgroundColor: Colors.green);
-    } else {
-      Get.snackbar('Error', 'Update failed',
-          snackPosition: SnackPosition.BOTTOM,
-          colorText: Colors.white,
-          backgroundColor: Colors.red);
-    }
-    update();
+    fetchUsers();
   }
 
   Future<void> deleteUser({required int id}) async {
-    int? res = await DBHelper.dbHelper.deleteUser(id: id);
-    if (res != null) {
-      getUser();
-      Get.snackbar('User Deleted', 'user deleted successfully',
+    await DBHelper.dbHelper.deleteUser(id);
+    fetchUsers();
+  }
+
+  Future<void> loginUser({
+    required String email,
+    required String password,
+  }) async {
+    List<UserModal> userList = await DBHelper.dbHelper.getUsersByEmail(email);
+
+    if (userList.isEmpty) {
+      Get.snackbar("Error", "No account found with this email",
           snackPosition: SnackPosition.BOTTOM,
-          colorText: Colors.white,
-          backgroundColor: Colors.green);
-    } else {
-      Get.snackbar('Error', 'Deletion failed',
-          snackPosition: SnackPosition.BOTTOM,
-          colorText: Colors.white,
-          backgroundColor: Colors.red);
+          backgroundColor: const Color(0xffFF0000));
+      return;
     }
-    update();
+
+    UserModal user = userList.first;
+    if (user.password != password) {
+      Get.snackbar("Error", "Incorrect password",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xffFF0000));
+      return;
+    }
+
+    isLoggedIn.value = true;
+    Get.snackbar("Success", "Login successful!",
+        snackPosition: SnackPosition.BOTTOM);
+    Get.offNamed('/home');
+  }
+
+  Future<void> updateUser({
+    required int id,
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    await DBHelper.dbHelper
+        .updateUser(id: id, name: name, email: email, password: password);
+    fetchUsers();
   }
 }

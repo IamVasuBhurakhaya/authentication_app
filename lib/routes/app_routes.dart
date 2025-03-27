@@ -22,11 +22,11 @@ class AppRoutes {
     ),
     GetPage(
       name: login,
-      page: () => const LoginPage(),
+      page: () => LoginPage(),
     ),
     GetPage(
       name: signUp,
-      page: () => const SignupPage(),
+      page: () => SignupPage(),
     ),
   ];
 }

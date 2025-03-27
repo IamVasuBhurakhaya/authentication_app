@@ -16,7 +16,6 @@ class _SignupPageState extends State<SignupPage> {
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-
   UserController controller = Get.put(UserController());
 
   @override
@@ -91,6 +90,7 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 TextFormField(
                   controller: passwordController,
+                  obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a password';
@@ -109,10 +109,14 @@ class _SignupPageState extends State<SignupPage> {
                 GestureDetector(
                   onTap: () {
                     if (signupKey.currentState!.validate()) {
+                      controller.registerUser(
+                        name: nameController.text,
+                        email: emailController.text,
+                        password: passwordController.text,
+                      );
                       emailController.clear();
                       passwordController.clear();
-
-                      controller.resetUserIndex();
+                      nameController.clear();
 
                       Get.toNamed(AppRoutes.login);
                     } else {
@@ -157,7 +161,7 @@ class _SignupPageState extends State<SignupPage> {
                       onTap: () {
                         Get.toNamed(AppRoutes.login);
                       },
-                      child: Text(
+                      child: const Text(
                         "Login",
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),

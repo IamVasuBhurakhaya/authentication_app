@@ -11,12 +11,21 @@ class UserModal {
     required this.password,
   });
 
-  factory UserModal.fromMap({required Map<String, dynamic> map}) {
+  factory UserModal.fromMap(Map<String, dynamic> map) {
     return UserModal(
-      id: map['id '],
+      id: map['id'],
       name: map['name'],
       email: map['email'],
       password: map['password'],
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'password': password,
+    };
   }
 }

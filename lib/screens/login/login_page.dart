@@ -12,14 +12,13 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
+  UserController controller = Get.put(UserController());
+
   @override
   Widget build(BuildContext context) {
-    TextEditingController emailController = TextEditingController();
-    TextEditingController passwordController = TextEditingController();
-    GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
-
-    UserController controller = Get.put(UserController());
-
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -72,6 +71,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 TextFormField(
                   controller: passwordController,
+                  obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a password';
@@ -90,10 +90,12 @@ class _LoginPageState extends State<LoginPage> {
                 GestureDetector(
                   onTap: () {
                     if (loginFormKey.currentState!.validate()) {
+                      controller.loginUser(
+                        email: emailController.text,
+                        password: passwordController.text,
+                      );
                       emailController.clear();
                       passwordController.clear();
-
-                      controller.resetUserIndex();
 
                       Get.offNamed(AppRoutes.home);
                     } else {
