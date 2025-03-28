@@ -29,7 +29,7 @@ dependencies:
 
 ### 1️⃣ Clone the Repository
 ```sh
-git clone https://github.com/YourUsername/auth_app.git
+git clone https://github.com/IamVasuBhurakhaya/authentication_app.git
 cd auth_app
 ```
 
